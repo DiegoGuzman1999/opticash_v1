@@ -2,7 +2,7 @@
 
 ## 🏗️ Arquitectura de Microservicios
 
-Este es el repositorio principal que contiene la arquitectura completa de OptiCash como un monorepo con microservicios.
+Monorepo principal que gestiona la orquestación de microservicios Opticash.
 
 ## 📁 Estructura del Proyecto
 
