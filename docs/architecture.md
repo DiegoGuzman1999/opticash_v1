@@ -220,7 +220,7 @@ services:
 ```bash
 # Clonar repositorio
 git clone https://github.com/DiegoGuzman1999/opticash_v1.git
-cd opticash_v1
+cd OptiCash
 
 # Configurar submódulos
 git submodule init
