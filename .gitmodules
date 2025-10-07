@@ -1,9 +1,9 @@
 [submodule "backend"]
 	path = backend
-	url = https://github.com/DiegoGuzman1999/opticash_backend.git
+	url = https://github.com/DiegoGuzman1999/opticash-backend.git
 	branch = main
 
 [submodule "frontend"]
 	path = frontend
-	url = https://github.com/DiegoGuzman1999/opticash_frontend.git
+	url = https://github.com/DiegoGuzman1999/opticash-frontend.git
 	branch = main
