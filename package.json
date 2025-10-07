@@ -1,0 +1,60 @@
+{
+  "name": "opticash-monorepo",
+  "version": "1.0.0",
+  "description": "OptiCash - Monorepo para arquitectura de microservicios",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && pip install -r requirements.txt",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && python -m pytest",
+    "test:frontend": "cd frontend && npm test",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && python -m flake8 .",
+    "lint:frontend": "cd frontend && npm run lint",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "docker:logs": "docker-compose logs -f",
+    "submodule:init": "git submodule init",
+    "submodule:update": "git submodule update",
+    "submodule:update-remote": "git submodule update --remote",
+    "submodule:status": "git submodule status",
+    "setup": "npm run submodule:init && npm run submodule:update && npm install",
+    "clean": "docker-compose down -v && docker system prune -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "monorepo",
+    "microservices",
+    "fastapi",
+    "react",
+    "postgresql",
+    "docker",
+    "fintech"
+  ],
+  "author": "Diego Guzmán <diego@opticash.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DiegoGuzman1999/opticash_v1.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DiegoGuzman1999/opticash_v1/issues"
+  },
+  "homepage": "https://github.com/DiegoGuzman1999/opticash_v1#readme"
+}
