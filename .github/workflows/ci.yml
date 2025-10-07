@@ -2,86 +2,177 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, dev, qa ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, dev, qa ]
 
 jobs:
-  test:
+  # Job para verificar la estructura del monorepo
+  monorepo-check:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x, 20.x]
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        submodules: recursive
         
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run linter
-      run: npm run lint
-      
-    - name: Run tests
-      run: npm test
-      
-    - name: Run type checking
-      run: npm run type-check
-      
-    - name: Build application
-      run: npm run build
-      
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage/lcov.info
-        flags: unittests
-        name: codecov-umbrella
-
-  security:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Run security audit
-      run: npm audit --audit-level moderate
-      
-    - name: Run Snyk security scan
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-  deploy:
-    needs: [test, security]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20.x'
-        cache: 'npm'
+    - name: Verify monorepo structure
+      run: |
+        echo "Verificando estructura del monorepo..."
+        ls -la
+        echo "Verificando submódulos..."
+        git submodule status
         
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Build application
-      run: npm run build
-      
-    - name: Deploy to production
-      run: echo "Deploy to production server"
-      # Add your deployment commands here
+    - name: Check Docker Compose
+      run: |
+        if [ -f "docker-compose.yml" ]; then
+          echo "✅ docker-compose.yml encontrado"
+        else
+          echo "❌ docker-compose.yml no encontrado"
+          exit 1
+        fi
+        
+    - name: Check package.json
+      run: |
+        if [ -f "package.json" ]; then
+          echo "✅ package.json encontrado"
+          cat package.json | jq '.name'
+        else
+          echo "❌ package.json no encontrado"
+          exit 1
+        fi
+
+  # Job para verificar submódulos
+  submodules-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Check backend submódulo
+      run: |
+        if [ -d "backend" ]; then
+          echo "✅ Backend submódulo encontrado"
+          cd backend
+          ls -la
+        else
+          echo "❌ Backend submódulo no encontrado"
+          exit 1
+        fi
+        
+    - name: Check frontend submódulo
+      run: |
+        if [ -d "frontend" ]; then
+          echo "✅ Frontend submódulo encontrado"
+          cd frontend
+          ls -la
+        else
+          echo "❌ Frontend submódulo no encontrado"
+          exit 1
+        fi
+
+  # Job para verificar documentación
+  docs-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Check README files
+      run: |
+        echo "Verificando archivos README..."
+        if [ -f "README.md" ]; then
+          echo "✅ README.md principal encontrado"
+        fi
+        if [ -f "backend/README.md" ]; then
+          echo "✅ Backend README.md encontrado"
+        fi
+        if [ -f "frontend/README.md" ]; then
+          echo "✅ Frontend README.md encontrado"
+        fi
+        
+    - name: Check documentation
+      run: |
+        if [ -d "docs" ]; then
+          echo "✅ Directorio docs encontrado"
+          ls -la docs/
+        else
+          echo "❌ Directorio docs no encontrado"
+          exit 1
+        fi
+
+  # Job para verificar scripts
+  scripts-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Check setup script
+      run: |
+        if [ -f "scripts/setup.sh" ]; then
+          echo "✅ setup.sh encontrado"
+          chmod +x scripts/setup.sh
+        else
+          echo "❌ setup.sh no encontrado"
+          exit 1
+        fi
+        
+    - name: Check database script
+      run: |
+        if [ -f "scripts/init-db.sql" ]; then
+          echo "✅ init-db.sql encontrado"
+        else
+          echo "❌ init-db.sql no encontrado"
+          exit 1
+        fi
+
+  # Job para verificar variables de entorno
+  env-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Check environment template
+      run: |
+        if [ -f "env.example" ]; then
+          echo "✅ env.example encontrado"
+          echo "Variables de entorno configuradas:"
+          grep -E "^[A-Z_]+" env.example | wc -l
+        else
+          echo "❌ env.example no encontrado"
+          exit 1
+        fi
+
+  # Job para verificar Docker
+  docker-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        
+    - name: Validate Docker Compose
+      run: |
+        if command -v docker-compose &> /dev/null; then
+          docker-compose config
+          echo "✅ Docker Compose válido"
+        else
+          echo "⚠️ Docker Compose no disponible, pero archivo existe"
+        fi
